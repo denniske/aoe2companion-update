@@ -1,0 +1,47 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["tracing"]
+  binaryTargets   = ["native", "darwin", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider    = "postgresql"
+  url         = env("DATABASE_URL_UPDATE")
+  directUrl   = env("DATABASE_URL_UPDATE_DIRECT")
+}
+
+model update {
+  update_id            String            @id
+  runtime_version      String
+  version              String
+  created_at           DateTime?
+  config               Json
+  type                 String?
+
+  assets               asset[]
+
+  @@index([runtime_version], map: "IDX_935515e6126c1a045608ca78b9")
+  @@index([created_at], map: "IDX_ke5ie28aa98207f3a21145feb8")
+}
+
+model asset {
+  update_id               String
+  file_id                 String
+
+  platform                String
+  launch_asset            Boolean
+
+  update                  update          @relation(fields: [update_id], references: [update_id])
+  file                    file            @relation(fields: [file_id], references: [file_id])
+
+  @@id([update_id, file_id, platform])
+}
+
+model file {
+  file_id                 String         @id
+
+  presigned               DateTime
+  verified                Boolean        @default(false)
+
+  assets                  asset[]
+}
